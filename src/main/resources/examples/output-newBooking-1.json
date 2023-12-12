@@ -1,0 +1,9 @@
+{
+	"N_BOOKING": "4",
+	"FIRSTNAME": "Miguel",
+	"LASTNAME": "Galo",
+	"EMAIL": "miguelgalo@gmail.com",
+	"HOTEL": "Ceu Azul",
+	"CHECK_IN": "2020-10-01 12:00:00" ,
+	"CHECK_OUT": "2020-10-01 12:00:00"
+}
