@@ -1,0 +1,12 @@
+%dw 2.0
+
+type auto_6ff650ff_49bf_42e3_b59a_351acd7ef26c_Input_Payload = {
+  firstName: String, 
+  lastName: String, 
+  check_out: String, 
+  code: Number, 
+  check_in: String, 
+  email: String, 
+  _?: Any
+}
+

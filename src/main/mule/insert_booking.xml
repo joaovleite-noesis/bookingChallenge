@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="insert_bookingFlow" doc:id="6ff650ff-49bf-42e3-b59a-351acd7ef26c" >
+		<logger level="INFO" doc:name="new booking insert" doc:id="96e606e4-828f-46f3-b242-e9909b79e612" message="NEW BOOKING INSERT"/>
+		<ee:transform doc:name="Transform Message" doc:id="1d517850-c2b9-43b8-a17f-32db9740cbfb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	N_BOOKING: payload.code,
+	FIRSTNAME: payload.firstName,
+	LASTNAME: payload.lastName,
+	EMAIL: payload.email,
+	HOTEL: attributes.uriParams.hotel,
+	CHECK_IN: payload.check_in as DateTime as String {format: 'yyyy-MM-dd HH:mm:ss'},
+	CHECK_OUT: payload.check_out as DateTime as String {format: 'yyyy-MM-dd HH:mm:ss'}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert in Database" doc:id="1dbd62a0-c11d-4e9c-bf72-1fbcb8bd9762" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO public."BOOKING"(
+	"N_BOOKING", "FIRSTNAME", "LASTNAME", "EMAIL", "HOTEL", "CHECK_IN", "CHECK_OUT")
+	VALUES (
+			:N_BOOKING,
+			:FIRSTNAME,
+			:LASTNAME,
+			:EMAIL,
+			:HOTEL,
+			:CHECK_IN,
+			:CHECK_OUT
+			)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'N_BOOKING': payload.N_BOOKING as Number,
+	'FIRSTNAME': payload.FIRSTNAME,
+	'LASTNAME': payload.LASTNAME,
+	'EMAIL': payload.EMAIL,
+	'HOTEL': payload.HOTEL,
+	'CHECK_IN': payload.CHECK_IN as String, 
+	'CHECK_OUT': payload.CHECK_OUT as String
+}]]]></db:input-parameters>
+		</db:insert>
+		<set-payload value='#[output application/json&#10;---&#10;Status: "Booking Created"]' doc:name="Status" doc:id="a5f93aac-fb5e-4279-bef3-26d66ca5701b" />
+		<logger level="INFO" doc:name="insert complete" doc:id="7062fea2-6ff4-45d5-987f-19b63e0c3f2a" message="INSERT COMPLETE"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0e8dc28e-1440-42e1-9603-89f83586f9a9" >
+				<set-payload value="#[output application/json&#10;---&#10;error.description]" doc:name="error.description" doc:id="8e9a71ea-d3b1-4969-95b1-590126486965" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
